@@ -17,7 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
-    // Hemen yazı alanlarını temizle
     _usernameController.clear();
     _passwordController.clear();
 
@@ -30,23 +29,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_selectedRole == "User") {
       if (DbKisiler.checkUserLogin(username, password)) {
-        Navigator.pushNamed(
-          context,
-          '/user_home',
-          arguments: username,
-        );
-      } 
-      else {
+        Navigator.pushNamed(context, '/user_home', arguments: username);
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Kullanıcı adı veya şifre yanlış")),
         );
       }
-    } 
-    else {
+    } else {
       if (DbKisiler.checkAdminLogin(username, password)) {
-        Navigator.pushNamed(context, "/admin_home");
-      }
-      else {
+        Navigator.pushNamed(context, '/admin_home');
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Admin adı veya şifre yanlış")),
         );
@@ -54,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Widget _buildSlidingSelector() {
+  Widget buildRoleSelector() {
     double fullWidth = MediaQuery.of(context).size.width - 48;
 
     return Container(
@@ -118,6 +110,40 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Widget buildLoginForm() {
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        buildRoleSelector(),
+        const SizedBox(height: 24),
+        TextField(
+          controller: _usernameController,
+          decoration: const InputDecoration(
+            labelText: "Username",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _passwordController,
+          obscureText: true,
+          decoration: const InputDecoration(
+            labelText: "Password",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _login,
+            child: const Text("Login"),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,33 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Login",
                       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 24),
-                    _buildSlidingSelector(),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: "Username",
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: "Password",
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _login,
-                        child: const Text("Login"),
-                      ),
-                    )
+                    buildLoginForm(),
                   ],
                 ),
               ),
