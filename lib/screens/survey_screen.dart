@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/survey_service.dart';
+import '../services/database_helper.dart';
 import '../models/question.dart';
+import '../models/survey_response.dart';
 
 class SurveyScreen extends StatefulWidget {
-  const SurveyScreen({super.key});
+  final String username;
+
+  const SurveyScreen({super.key, required this.username});
 
   @override
   State<SurveyScreen> createState() => _SurveyScreenState();
@@ -26,8 +30,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
     });
   }
 
-  void submitSurvey() {
-
+  void submitSurvey() async {
     if (selectedRatings.contains(null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Lütfen tüm soruları cevaplayın")),
@@ -35,25 +38,42 @@ class _SurveyScreenState extends State<SurveyScreen> {
       return;
     }
 
-    List<PostQuestion> answers = [];
+    try {
+      // Veritabanına kaydet
+      List<QuestionAnswer> answers = [];
+      for (int i = 0; i < _questions.length; i++) {
+        answers.add(
+          QuestionAnswer(
+            responseId: 0, // Geçici değer, veritabanı tarafından ayarlanacak
+            questionId: _questions[i].id,
+            questionText: _questions[i].question,
+            rating: selectedRatings[i]!,
+          ),
+        );
+      }
 
-    for (int i = 0; i < _questions.length; i++) {
-        answers.add(PostQuestion(id: _questions[i].id, rate: selectedRatings[i]!));
+      SurveyResponse response = SurveyResponse(
+        username: widget.username,
+        timestamp: DateTime.now(),
+        answers: answers,
+      );
+
+      await DatabaseHelper().insertSurveyResponse(response);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Anket başarıyla gönderildi ve kaydedildi!"),
+        ),
+      );
+
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pop(context);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Hata: $e")));
     }
-
-    print("Anket Sonuçları:");
-    for (var a in answers) {
-      print("Soru ID: ${a.id}, Puan: ${a.rate}");
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Anket başarıyla gönderildi.")),
-    );
-
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pop(context);
-    });
-        
   }
 
   Widget _buildSurveyList(List<GetQuestion> questions) {
@@ -119,7 +139,7 @@ class _SurveyScreenState extends State<SurveyScreen> {
               child: const Text("Gönder"),
             ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -133,11 +153,9 @@ class _SurveyScreenState extends State<SurveyScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          }
-          else if (snapshot.hasError) {
+          } else if (snapshot.hasError) {
             return Center(child: Text("Hata: ${snapshot.error}"));
-          }
-          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text("Soru bulunamadı."));
           }
 

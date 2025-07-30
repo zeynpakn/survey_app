@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'survey_screen.dart';
 
 class UserHome extends StatelessWidget {
   final String username;
@@ -49,7 +50,12 @@ class UserHome extends StatelessWidget {
   Widget _buildSurveyButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        Navigator.pushNamed(context, '/survey');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SurveyScreen(username: username),
+          ),
+        );
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.pink.shade200,

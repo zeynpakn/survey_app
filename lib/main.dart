@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:survey_app/screens/survey_screen.dart';
 import 'package:survey_app/screens/user_home.dart';
 import 'screens/login.dart';
 import 'screens/admin_home.dart';
+import 'services/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // SQLite veritabanını başlat
+  await DatabaseHelper().database;
+
   runApp(const SurveyApp());
 }
 
@@ -23,9 +28,8 @@ class SurveyApp extends StatelessWidget {
           return UserHome(username: username);
         },
         '/admin_home': (context) => const AdminHome(),
-        '/survey': (context) => const SurveyScreen(),
-        '/login' :   (context) => const LoginScreen(),
-      }, 
+        '/login': (context) => const LoginScreen(),
+      },
     );
   }
 }
